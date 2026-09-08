@@ -1,9 +1,10 @@
-
 //  user_model.dart
 //  AgroShare
 //
 //  Create by Vinicius Bruno on 05/09/2026
 //
+
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 
@@ -14,6 +15,7 @@ class UserModel with ChangeNotifier {
   String? email;
   String? cpf;
   String? password;
+  File? image;
   bool? isCheck = false;
   Mode _mode = Mode.isLogin;
 
@@ -45,6 +47,7 @@ class UserModel with ChangeNotifier {
       'email': email,
       'password': password,
       'isCheck': isCheck,
+      'photo': image?.path,
     };
   }
 

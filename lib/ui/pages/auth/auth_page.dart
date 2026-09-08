@@ -5,9 +5,11 @@
 //
 
 import 'package:agroshare/models/auth/user_model.dart';
+import 'package:agroshare/navigator/navigator_app.dart';
 import 'package:agroshare/services/auth/auth_services.dart';
 import 'package:agroshare/ui/colors/app_colors.dart';
 import 'package:agroshare/ui/input/input.dart';
+import 'package:agroshare/ui/pages/auth/add_photo_page.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsx_plus/iconsx_plus.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
@@ -21,12 +23,23 @@ class AuthPage extends StatelessWidget {
     final UserModel userModelProvider = Provider.of<UserModel>(context);
     final Size size = MediaQuery.of(context).size;
     return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
       body: Container(
         alignment: .center,
         padding: .only(left: 15, right: 15),
         height: size.height,
         width: size.width,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color.fromARGB(255, 11, 41, 25),
+              Color(0xFF2F6B4A),
+              AppColors.mainColor,
+            ],
+            stops: [0.0, 1, 1.0],
+          ),
+        ),
         child: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: .center,
@@ -121,14 +134,22 @@ class AuthPage extends StatelessWidget {
 
                   // BOTÃO DE ENTRAR E CADASTRAR
                   _EventButton(
+                    userModelProvider: userModelProvider,
                     onTap: () async {
+                      if (userModelProvider.isSignup) {
+                        final NavigatorsApp navigatorsApp = NavigatorsApp();
+
+                        await navigatorsApp.push(context, AddPhotoPage());
+
+                        return;
+                      }
+
                       final AuthServices authServices = AuthServices(
                         userModel: userModelProvider,
                       );
 
                       await authServices.onSubmit(context);
                     },
-                    userModelProvider: userModelProvider,
                   ),
 
                   Row(
@@ -220,8 +241,7 @@ class _CardAuth extends StatelessWidget {
       _userModelProvider.isLogin ? (size.height * .55) : (size.height * .75);
 }
 
-// esta classe serve para mostrar o icone do aplicativo
-// na tela de login
+// esta classe serve para mostrar o icone do aplicativo na tela de login
 class _BoxIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -253,9 +273,7 @@ class _EventButton extends StatelessWidget {
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: _userModelProvider.isLoading
-            ? null
-            : (_checkTermos ? _onTap : null),
+        onTap: (_checkTermos ? _onTap : null),
         child: Ink(
           height: 50,
           width: size.width,
@@ -270,7 +288,7 @@ class _EventButton extends StatelessWidget {
                     strokeWidth: 3,
                   )
                 : Text(
-                    _userModelProvider.isLogin ? 'Entrar' : 'Criar Conta',
+                    _userModelProvider.isLogin ? 'Entrar' : 'Continuar',
                     style: TextStyle(color: AppColors.whiteColor),
                   ),
           ),

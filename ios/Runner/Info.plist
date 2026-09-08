@@ -24,6 +24,17 @@
 		<string>????</string>
 		<key>CFBundleVersion</key>
 		<string>$(FLUTTER_BUILD_NUMBER)</string>
+
+
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Precisamos de acesso a sua galeria</string>
+
+		<key>NSCameraUsageDescription</key>
+		<string>Precisamos de acesso a sua camera</string>
+
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>Esse app precisa usar sua localização enquanto você usa o app</string>
+
 		<key>LSRequiresIPhoneOS</key>
 		<true />
 		<key>UIApplicationSceneManifest</key>

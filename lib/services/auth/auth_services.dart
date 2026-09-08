@@ -9,12 +9,15 @@ import 'package:agroshare/models/auth/credentials/email.dart';
 import 'package:agroshare/models/auth/credentials/name.dart';
 import 'package:agroshare/models/auth/credentials/password.dart';
 import 'package:agroshare/models/auth/user_model.dart';
+import 'package:agroshare/navigator/navigator_app.dart';
+import 'package:agroshare/services/picker/manager_picker.dart';
 import 'package:agroshare/ui/colors/app_colors.dart';
+import 'package:agroshare/ui/pages/home/home_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class AuthServices {
+class AuthServices extends ManagerPicker {
   final UserModel _userModel;
 
   AuthServices({required this._userModel});
@@ -49,6 +52,13 @@ class AuthServices {
       final User? user = userCredential.user;
 
       if (user != null) {
+        // OVERRIDE
+        final String? imageUrl = await uploadImagePicker(user.uid, _userModel);
+
+        if (imageUrl == null) {
+          throw 'Erro ao fazer upload da imagem, tente novamente';
+        }
+
         await user.updateDisplayName(name);
 
         await _firestore.collection('users').doc(user.uid).set({
@@ -57,7 +67,9 @@ class AuthServices {
           'cpf': cpf,
           'email': email,
           'create_in': DateTime.now().millisecondsSinceEpoch,
-          'photo': null,
+          'photo': imageUrl,
+          'lat': null,
+          'long': null,
         });
       }
     } on FirebaseAuthException catch (error) {
@@ -67,6 +79,8 @@ class AuthServices {
 
   Future<void> onSubmit(BuildContext context) async {
     try {
+      final NavigatorsApp navigatorsApp = NavigatorsApp();
+
       _userModel.setLoading = true;
 
       final Email email = Email(email: _userModel.email);
@@ -85,10 +99,14 @@ class AuthServices {
           email: email.getValue!,
           password: password.getValue!,
         );
-        return;
       }
 
-      await _signIn(email: email.getValue!, password: password.getValue!);
+      if (_userModel.isLogin) {
+        await _signIn(email: email.getValue!, password: password.getValue!);
+      }
+
+      if (!context.mounted) return;
+      await navigatorsApp.pushAndRemoveUntil(context, HomePage());
     } catch (err) {
       if (!context.mounted) return;
       _showMessageError(context, message: err.toString());
