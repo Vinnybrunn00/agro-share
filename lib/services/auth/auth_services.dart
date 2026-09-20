@@ -52,7 +52,7 @@ class AuthServices extends ManagerPicker {
       final User? user = userCredential.user;
 
       if (user != null) {
-        // OVERRIDE
+        /// OVERRIDE DE [ManagerPicker]
         final String? imageUrl = await uploadImagePicker(user.uid, _userModel);
 
         if (imageUrl == null) {

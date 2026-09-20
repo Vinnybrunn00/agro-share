@@ -141,7 +141,7 @@ class _ProfileHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<PickerProfile>(
-      builder: (context, picker, child) {
+      builder: (_, PickerProfile picker, _) {
         return Container(
           width: double.infinity,
           padding: .symmetric(horizontal: 18, vertical: 22),
@@ -159,28 +159,33 @@ class _ProfileHeader extends StatelessWidget {
                   CircleAvatar(
                     radius: 38,
                     backgroundColor: AppColors.backgroundColorWhite,
-                    backgroundImage: NetworkImage(_currentUser.photoUrl),
+                    backgroundImage: picker.image != null
+                        ? FileImage(picker.image!)
+                        : NetworkImage(_currentUser.photoUrl),
                   ),
 
                   // BADGE DA CAMERA
                   Positioned(
                     right: -2,
                     bottom: -2,
-                    child: Container(
-                      height: 26,
-                      width: 26,
-                      decoration: BoxDecoration(
-                        shape: .circle,
-                        color: AppColors.mainColor,
-                        border: Border.all(
-                          color: AppColors.whiteColor,
-                          width: 2,
+                    child: GestureDetector(
+                      onTap: () async => await picker.handlePicker(),
+                      child: Container(
+                        height: 26,
+                        width: 26,
+                        decoration: BoxDecoration(
+                          shape: .circle,
+                          color: AppColors.mainColor,
+                          border: Border.all(
+                            color: AppColors.whiteColor,
+                            width: 2,
+                          ),
                         ),
-                      ),
-                      child: Icon(
-                        Iconsax.camera_outline,
-                        size: 13,
-                        color: AppColors.whiteColor,
+                        child: Icon(
+                          Iconsax.camera_outline,
+                          size: 13,
+                          color: AppColors.whiteColor,
+                        ),
                       ),
                     ),
                   ),
