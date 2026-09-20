@@ -21,7 +21,7 @@ dependencies:
   provider: ^6.1.5+1
   iconsx_plus: ^1.0.1
   flutter_launcher_icons: ^0.14.4
-  firebase_core: ^4.14.0
+  firebase_core: ^4.15.0
   mask_text_input_formatter: ^2.9.0
   image_picker: ^1.2.3
   shimmer: ^4.0.0

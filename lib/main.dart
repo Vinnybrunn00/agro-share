@@ -2,7 +2,7 @@
 //  AgroShare
 //
 //  Create by Vinicius Bruno on 05/09/2026
-//
+// 
 
 import 'package:agroshare/models/auth/user_model.dart';
 import 'package:agroshare/core/providers/picker/picker_profile.dart';
