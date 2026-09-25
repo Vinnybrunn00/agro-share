@@ -93,12 +93,10 @@ class ProfileScreen extends StatelessWidget {
                 title: 'Sair da conta',
                 color: Colors.redAccent,
                 onTap: () {
-                  NavigatorsApp navigatorsApp = NavigatorsApp();
-
                   FirebaseAuth.instance.signOut().then((_) async {
                     if (!context.mounted) return;
 
-                    await navigatorsApp.pushAndRemoveUntil(context, AuthPage());
+                    await NavigatorsApp.pushAndRemoveUntil(context, AuthPage());
                   });
                 },
               ),

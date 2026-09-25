@@ -8,8 +8,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
-enum Mode { isLogin, isSignup }
-
 class UserModel with ChangeNotifier {
   String? name;
   String? email;
@@ -17,21 +15,12 @@ class UserModel with ChangeNotifier {
   String? password;
   File? image;
   bool? isCheck = false;
-  Mode _mode = Mode.isLogin;
-
-  bool get isLogin => _mode == Mode.isLogin;
-  bool get isSignup => _mode == Mode.isSignup;
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
   set setLoading(bool loading) {
     _isLoading = loading;
-    notifyListeners();
-  }
-
-  void changeMode() {
-    _mode = isLogin ? Mode.isSignup : Mode.isLogin;
     notifyListeners();
   }
 

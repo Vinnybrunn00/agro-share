@@ -5,28 +5,42 @@
 //
 
 import 'package:agroshare/constants/regex.dart';
+import 'package:agroshare/models/auth/credentials/contract/credentials_contract.dart';
+import 'package:flutter/widgets.dart';
 
-class Name {
-  final String _name;
+class Name with ChangeNotifier implements Credentials {
+  String? _msgError;
+  String? _name;
 
-  Name({required this._name}) {
-    _validate();
-  }
+  @override
+  String? get msgError => _msgError;
 
-  String get getValue => _name;
+  @override
+  String? get getValue => _name;
 
-  void _validate() {
-    if (_name.trim().isEmpty) {
-      throw 'O nome completo não pode estar vazio';
+  @override
+  void validate(String? name) {
+    if (name == null) {
+      _msgError = 'O nome completo não pode estar vazio';
+      notifyListeners();
+      throw Exception(_msgError);
     }
 
-    if (hasNumbers.hasMatch(_name)) {
-      throw 'O nome não pode conter números.';
+    if (hasNumbers.hasMatch(name)) {
+      _msgError = 'O nome não pode conter números.';
+      notifyListeners();
+      throw Exception(_msgError);
     }
 
-    final words = _name.trim().split(RegExp(r'\s+'));
+    final List<String> words = name.trim().split(RegExp(r'\s+'));
     if (words.length < 2) {
-      throw 'Informe seu nome completo (nome e sobrenome).';
+      _msgError = 'Informe seu nome completo (nome e sobrenome).';
+      notifyListeners();
+      throw Exception(_msgError);
     }
+
+    _name = name;
+    _msgError = null;
+    notifyListeners();
   }
 }

@@ -199,8 +199,8 @@ class _AvatarPicker extends StatelessWidget {
 class _CreateAccount extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Consumer2<PickerProfile, UserModel>(
-      builder: (_, picker, userModelProvider, _) {
+    return Consumer3<PickerProfile, UserModel, AuthServices>(
+      builder: (_, picker, userModelProvider, authService, _) {
         return Material(
           borderRadius: BorderRadius.circular(12),
           child: InkWell(
@@ -209,11 +209,7 @@ class _CreateAccount extends StatelessWidget {
                 ? () async {
                     userModelProvider.image = picker.image;
 
-                    final AuthServices authServices = AuthServices(
-                      userModel: userModelProvider,
-                    );
-
-                    await authServices.onSubmit(context);
+                    await authService.signUp(userModel: userModelProvider);
                   }
                 : null,
             child: Ink(

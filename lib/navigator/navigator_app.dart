@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class NavigatorsApp {
-  Future<void> pushAndRemoveUntil(BuildContext context, Widget page) async {
+abstract class NavigatorsApp {
+  static Future<void> pushAndRemoveUntil(BuildContext context, Widget page) async {
     await Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (_) => page),
@@ -9,7 +9,7 @@ class NavigatorsApp {
     );
   }
 
-  Future<void> push(BuildContext context, Widget page) async {
+  static Future<void> push(BuildContext context, Widget page) async {
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
   }
 }

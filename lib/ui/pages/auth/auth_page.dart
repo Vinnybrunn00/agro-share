@@ -4,15 +4,19 @@
 //  Create by Vinicius Bruno on 05/09/2026
 //
 
+import 'package:agroshare/models/auth/credentials/email.dart';
+import 'package:agroshare/models/auth/credentials/password.dart';
 import 'package:agroshare/models/auth/user_model.dart';
 import 'package:agroshare/navigator/navigator_app.dart';
 import 'package:agroshare/services/auth/auth_services.dart';
 import 'package:agroshare/ui/colors/app_colors.dart';
 import 'package:agroshare/ui/input/input.dart';
-import 'package:agroshare/ui/pages/auth/add_photo_page.dart';
+import 'package:agroshare/ui/pages/auth/components/background_auth.dart';
+import 'package:agroshare/ui/pages/auth/components/card_auth.dart';
+import 'package:agroshare/ui/pages/auth/components/event_button.dart';
+import 'package:agroshare/ui/pages/auth/register/name_page.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsx_plus/iconsx_plus.dart';
-import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:provider/provider.dart';
 
 class AuthPage extends StatelessWidget {
@@ -20,225 +24,93 @@ class AuthPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Email email = Provider.of<Email>(context);
+    final Password password = Provider.of<Password>(context);
     final UserModel userModelProvider = Provider.of<UserModel>(context);
-    final Size size = MediaQuery.of(context).size;
+    final AuthServices authServices = Provider.of<AuthServices>(context);
     return Scaffold(
-      body: Container(
-        alignment: .center,
-        padding: .only(left: 15, right: 15),
-        height: size.height,
-        width: size.width,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color.fromARGB(255, 11, 41, 25),
-              Color(0xFF2F6B4A),
-              AppColors.mainColor,
-            ],
-            stops: [0.0, 1, 1.0],
-          ),
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: .center,
+      body: BackgroundAuth(
+        children: [
+          CardAuth(
+            spacing: 12,
             children: [
-              _CardAuth(
-                userModelProvider: userModelProvider,
+              Column(
+                spacing: 10,
                 children: [
-                  Column(
-                    spacing: 10,
-                    children: [
-                      // ICONE
-                      _BoxIcon(),
+                  // ICONE
+                  _BoxIcon(),
 
-                      // TEXT - ENTRAR OU CADASTRAR NO AGROSHARE
-                      _AuthText(userModelProvider: userModelProvider),
-                    ],
-                  ),
+                  // TEXT - ENTRAR
+                  _AuthText(),
+                ],
+              ),
 
-                  // INPUTS
-                  Column(
-                    spacing: 12,
-                    children: [
-                      // NOME COMPLETO - apenas em modo cadastro
-                      _TransitionInputs(
-                        userModelProvider: userModelProvider,
-                        child: InputText(
-                          prefixIcon: BoxIcons.bx_user,
-                          hintText: 'Nome Completo',
-                          keyboardType: .text,
-                          onChanged: (name) => userModelProvider.name = name,
-                        ),
+              // EMAIL
+              InputText(
+                prefixIcon: EvaIcons.email_outline,
+                hintText: 'Email',
+                keyboardType: .emailAddress,
+                onChanged: (email) => userModelProvider.email = email,
+                errorText: authServices.firebaseMsgError ?? email.msgError,
+              ),
+
+              // SENHA
+              InputText(
+                prefixIcon: Icons.key,
+                hintText: 'Senha',
+                keyboardType: .text,
+                onChanged: (password) => userModelProvider.password = password,
+                errorText: authServices.firebaseMsgError ?? password.msgError,
+              ),
+
+              // ESQUECEU A SENHA
+              _ForgetPassword(userModelProvider: userModelProvider),
+
+              // BOTÃO DE ENTRAR
+              EventButton(
+                userModelProvider: userModelProvider,
+                title: 'Entrar',
+                onTap: () async {
+                  email.validate(userModelProvider.email);
+                  password.validate(userModelProvider.password);
+
+                  if (email.getValue != null && password.getValue != null) {
+                    await authServices.signIn(
+                      email: email.getValue!,
+                      password: password.getValue!,
+                      userModel: userModelProvider,
+                    );
+                  }
+                },
+              ),
+
+              Row(
+                spacing: 4,
+                mainAxisAlignment: .center,
+                children: [
+                  Text('Não tem conta?'),
+                  GestureDetector(
+                    onTap: userModelProvider.isLoading
+                        ? null
+                        : () async {
+                            await NavigatorsApp.push(context, NamePage());
+                          },
+                    child: Text(
+                      'Cadastre-se',
+                      style: TextStyle(
+                        color: AppColors.mainColor,
+                        fontWeight: .w600,
                       ),
-
-                      _TransitionInputs(
-                        userModelProvider: userModelProvider,
-                        child: InputText(
-                          prefixIcon: BoxIcons.bx_credit_card,
-                          hintText: 'CPF',
-                          keyboardType: .number,
-                          onChanged: (cpf) => userModelProvider.cpf = cpf,
-                          inputFormatters: [
-                            MaskTextInputFormatter(
-                              mask: '###.###.###-##',
-                              filter: {"#": RegExp(r'[0-9]')},
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // EMAIL
-                      InputText(
-                        prefixIcon: EvaIcons.email_outline,
-                        hintText: 'Email',
-                        keyboardType: .emailAddress,
-                        onChanged: (email) => userModelProvider.email = email,
-                      ),
-
-                      // SENHA
-                      InputText(
-                        prefixIcon: Icons.key,
-                        hintText: userModelProvider.isLogin
-                            ? 'Senha'
-                            : 'Crie uma senha',
-                        keyboardType: .text,
-                        onChanged: (password) =>
-                            userModelProvider.password = password,
-                      ),
-                    ],
-                  ),
-
-                  // ESQUECEU A SENHA
-                  if (userModelProvider.isLogin)
-                    _ForgetPassword(userModelProvider: userModelProvider),
-
-                  if (userModelProvider.isSignup)
-                    Row(
-                      children: [
-                        Checkbox(
-                          splashRadius: 10,
-                          activeColor: AppColors.mainColor,
-                          value: userModelProvider.isCheck,
-                          onChanged: userModelProvider.onChange,
-                        ),
-                        Expanded(
-                          child: Text(
-                            'Aceito os termos de uso e a política de privacidade',
-                            overflow: .fade,
-                          ),
-                        ),
-                      ],
                     ),
-
-                  // BOTÃO DE ENTRAR E CADASTRAR
-                  _EventButton(
-                    userModelProvider: userModelProvider,
-                    onTap: () async {
-                      if (userModelProvider.isSignup) {
-                        final NavigatorsApp navigatorsApp = NavigatorsApp();
-
-                        await navigatorsApp.push(context, AddPhotoPage());
-
-                        return;
-                      }
-
-                      final AuthServices authServices = AuthServices(
-                        userModel: userModelProvider,
-                      );
-
-                      await authServices.onSubmit(context);
-                    },
-                  ),
-
-                  Row(
-                    spacing: 4,
-                    mainAxisAlignment: .center,
-                    children: [
-                      Text(
-                        userModelProvider.isLogin
-                            ? 'Não tem conta?'
-                            : 'Já possui uma conta?',
-                      ),
-                      GestureDetector(
-                        onTap: userModelProvider.isLoading
-                            ? null
-                            : () => userModelProvider.changeMode(),
-                        child: Text(
-                          userModelProvider.isLogin
-                              ? 'Cadastre-se'
-                              : 'Voltar ao login',
-                          style: TextStyle(
-                            color: AppColors.mainColor,
-                            fontWeight: .w600,
-                          ),
-                        ),
-                      ),
-                    ],
                   ),
                 ],
               ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }
-}
-
-class _TransitionInputs extends StatelessWidget {
-  final UserModel _userModelProvider;
-  final Widget? _child;
-  const new({required this._userModelProvider, required this._child});
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: Duration(milliseconds: 450),
-      constraints: BoxConstraints(
-        minHeight: _userModelProvider.isLogin ? 0 : 43,
-        maxHeight: _userModelProvider.isLogin ? 0 : 43,
-      ),
-      curve: Curves.linear,
-      child: AnimatedOpacity(
-        duration: Duration(milliseconds: 450),
-        opacity: _userModelProvider.isSignup ? 1 : 0,
-        child: _child,
-      ),
-    );
-  }
-}
-
-class _CardAuth extends StatelessWidget {
-  final UserModel _userModelProvider;
-  final List<Widget> _children;
-
-  const new({required this._children, required this._userModelProvider});
-
-  @override
-  Widget build(BuildContext context) {
-    final Size size = MediaQuery.of(context).size;
-    return AnimatedContainer(
-      alignment: .center,
-      duration: Duration(milliseconds: 450),
-      padding: .only(left: 15, right: 15),
-      height: _sizeCard(size),
-      decoration: BoxDecoration(
-        color: AppColors.whiteColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        spacing: 12,
-        crossAxisAlignment: _userModelProvider.isLogin ? .end : .start,
-        mainAxisAlignment: .center,
-        children: _children,
-      ),
-    );
-  }
-
-  double _sizeCard(Size size) =>
-      _userModelProvider.isLogin ? (size.height * .55) : (size.height * .75);
 }
 
 // esta classe serve para mostrar o icone do aplicativo na tela de login
@@ -256,61 +128,6 @@ class _BoxIcon extends StatelessWidget {
         child: Center(child: Image.asset('assets/icons/icon.png', width: 65)),
       ),
     );
-  }
-}
-
-// botão de entrar e criar conta
-class _EventButton extends StatelessWidget {
-  final UserModel _userModelProvider;
-  final void Function()? _onTap;
-
-  const _EventButton({required this._userModelProvider, required this._onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final Size size = MediaQuery.of(context).size;
-    return Material(
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: (_checkTermos ? _onTap : null),
-        child: Ink(
-          height: 50,
-          width: size.width,
-          decoration: BoxDecoration(
-            color: _checkTermosForColor(),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Center(
-            child: _userModelProvider.isLoading
-                ? CircularProgressIndicator(
-                    color: AppColors.whiteColor,
-                    strokeWidth: 3,
-                  )
-                : Text(
-                    _userModelProvider.isLogin ? 'Entrar' : 'Continuar',
-                    style: TextStyle(color: AppColors.whiteColor),
-                  ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  bool get _checkTermos {
-    if (_userModelProvider.isSignup) {
-      return _userModelProvider.isCheck!;
-    }
-    return true;
-  }
-
-  Color? _checkTermosForColor() {
-    if (_userModelProvider.isSignup) {
-      return _userModelProvider.isCheck!
-          ? AppColors.mainColor
-          : AppColors.mainColor.withAlpha(150);
-    }
-    return AppColors.mainColor;
   }
 }
 
@@ -332,16 +149,10 @@ class _ForgetPassword extends StatelessWidget {
 }
 
 class _AuthText extends StatelessWidget {
-  final UserModel userModelProvider;
-
-  const new({required this.userModelProvider});
-
   @override
   Widget build(BuildContext context) {
     return Text(
-      userModelProvider.isLogin
-          ? 'Entrar no AgroShare'
-          : 'Cadastrar no AgroShare',
+      'Entrar no AgroShare',
       style: TextStyle(
         fontSize: 18,
         color: AppColors.textColor,
